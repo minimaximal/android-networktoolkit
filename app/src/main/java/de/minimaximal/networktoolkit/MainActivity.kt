@@ -1,5 +1,6 @@
 package de.minimaximal.networktoolkit
 
+import de.minimaximal.networktoolkit.api.ripe.whatsmyip.Model
 import android.os.Bundle
 import android.os.StrictMode
 import android.os.StrictMode.ThreadPolicy
@@ -18,7 +19,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.squareup.moshi.JsonClass
 import de.minimaximal.networktoolkit.ui.theme.NetworkToolkitTheme
 import retrofit2.Call
 import retrofit2.Retrofit
@@ -60,19 +60,18 @@ class MainActivity : ComponentActivity() {
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Button(onClick = {
-                val ip = getIpAddress()
-                ipAddress = ip
+                ipAddress = getIpAddress()
             }) {
                 Text("Get IP Address")
             }
 
             Text(
-                text = ipAddress,
                 modifier = Modifier.clickable {
                     // Call the API to get the IP address
-                    val ip = getIpAddress()
-                    ipAddress = ip
-                }
+                    ipAddress = getIpAddress()
+
+                },
+                text = "ip:$ipAddress"
             )
         }
     }
@@ -80,30 +79,12 @@ class MainActivity : ComponentActivity() {
 
     interface WhatsMyIpApi {
         @GET("data/whats-my-ip/data.json")
-        fun getIpAddress(): Call<IpAddress>
+        fun getIpAddress(): Call<Model>
     }
 
-    @JsonClass(generateAdapter = true)
-    data class IpAddress(    val build_version: String,
-                             val cached: Boolean,
-                             val `data`: Data,
-                             val data_call_name: String,
-                             val data_call_status: String,
-                             val messages: List<Any>,
-                             val process_time: Int,
-                             val query_id: String,
-                             val see_also: List<Any>,
-                             val server_id: String,
-                             val status: String,
-                             val status_code: Int,
-                             val time: String,
-                             val version: String)
 
 
-    @JsonClass(generateAdapter = true)
-    data class Data(
-        val ip: String
-    )
+
 
     private val retrofit: Retrofit? = Retrofit.Builder()
         .baseUrl("https://stat.ripe.net/")
