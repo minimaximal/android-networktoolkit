@@ -18,6 +18,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import de.minimaximal.networktoolkit.ui.theme.NetworkToolkitTheme
 import retrofit2.Call
 import retrofit2.Retrofit
@@ -82,38 +83,45 @@ class MainActivity : ComponentActivity() {
                     // Call the API to get the IP address
                     ip = getWhatsMyIp()
                 },
-                text = "IP: $ip"
-            )
-            Text(
-                modifier = Modifier.clickable {
-                    assAdd = getAddressSpaceUsageAssAdd(ip)
-                },
-                text = "Network: $assAdd"
-            )
-            Text(
-                modifier = Modifier.clickable {
-                    assName = getAddressSpaceUsageAssName(ip)
-                },
-                text = "Network Name: $assName"
-            )
-            Text(
-                modifier = Modifier.clickable {
-                    allAdd = getAddressSpaceUsageAllAdd(ip)
-                },
-                text = "AS Network: $allAdd"
-            )
-            Text(
-                modifier = Modifier.clickable {
-                    allName = getAddressSpaceUsageAllName(ip)
-                },
-                text = "AS Name: $allName"
+                text = "IP: $ip",
+                fontSize = 30.sp
             )
             Text(
                 modifier = Modifier.clickable {
                     asn = getNetworkInfo(ip)
                 },
-                text = "ASN: $asn"
+                text = "ASN: $asn",
+                fontSize = 30.sp
             )
+            Text(
+                modifier = Modifier.clickable {
+                    assAdd = getAddressSpaceUsageAssAdd(ip)
+                },
+                text = "Network: $assAdd",
+                fontSize = 30.sp
+            )
+            Text(
+                modifier = Modifier.clickable {
+                    assName = getAddressSpaceUsageAssName(ip)
+                },
+                text = "Network Name: $assName",
+                fontSize = 30.sp
+            )
+            Text(
+                modifier = Modifier.clickable {
+                    allAdd = getAddressSpaceUsageAllAdd(ip)
+                },
+                text = "AS Network: $allAdd",
+                fontSize = 30.sp
+            )
+            Text(
+                modifier = Modifier.clickable {
+                    allName = getAddressSpaceUsageAllName(ip)
+                },
+                text = "AS Name: $allName",
+                fontSize = 30.sp
+            )
+
         }
     }
 
@@ -158,7 +166,9 @@ class MainActivity : ComponentActivity() {
             addressspaceusage?.getAddressSpaceUsageApi("https://stat.ripe.net/data/address-space-usage/data.json?resource=$ip")
                 ?.execute()
         if (response != null) {
-            return response.body()?.data?.assignments?.get(0)?.address_range ?: "data"
+            if (response.body()?.data?.assignments?.isEmpty() == false) {
+                return response.body()?.data?.assignments?.get(0)?.address_range ?: "data"
+            }
         }
         return ""
     }
@@ -168,7 +178,9 @@ class MainActivity : ComponentActivity() {
             addressspaceusage?.getAddressSpaceUsageApi("https://stat.ripe.net/data/address-space-usage/data.json?resource=$ip")
                 ?.execute()
         if (response != null) {
-            return response.body()?.data?.assignments?.get(0)?.asn_name ?: "data"
+            if (response.body()?.data?.assignments?.isEmpty() == false) {
+                return response.body()?.data?.assignments?.get(0)?.asn_name ?: "data"
+            }
         }
         return ""
     }
@@ -178,7 +190,9 @@ class MainActivity : ComponentActivity() {
             addressspaceusage?.getAddressSpaceUsageApi("https://stat.ripe.net/data/address-space-usage/data.json?resource=$ip")
                 ?.execute()
         if (response != null) {
-            return response.body()?.data?.allocations?.get(0)?.allocation ?: "data"
+            if (response.body()?.data?.allocations?.isEmpty() == false) {
+                return response.body()?.data?.allocations?.get(0)?.allocation ?: "data"
+            }
         }
         return ""
     }
@@ -188,7 +202,9 @@ class MainActivity : ComponentActivity() {
             addressspaceusage?.getAddressSpaceUsageApi("https://stat.ripe.net/data/address-space-usage/data.json?resource=$ip")
                 ?.execute()
         if (response != null) {
-            return response.body()?.data?.allocations?.get(0)?.asn_name ?: "data"
+            if (response.body()?.data?.allocations?.isEmpty() == false) {
+                return response.body()?.data?.allocations?.get(0)?.asn_name ?: "data"
+            }
         }
         return ""
     }
