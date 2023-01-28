@@ -3,12 +3,15 @@ package de.minimaximal.networktoolkit
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Surface
-import androidx.compose.material.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import de.minimaximal.networktoolkit.ui.theme.NetworkToolkitTheme
 
@@ -22,7 +25,8 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colors.background
                 ) {
-                    Greeting("Android")
+                    // MainView()
+                    PingHostView()
                 }
             }
         }
@@ -30,14 +34,28 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun Greeting(name: String) {
-    Text(text = "Hello $name!")
-}
+fun MainView() {
+    var currentScreen by remember { mutableStateOf("main") }
 
-@Preview(showBackground = true)
-@Composable
-fun DefaultPreview() {
-    NetworkToolkitTheme {
-        Greeting("Android")
-    }
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Network Toolkit") },
+                actions = {
+                    IconButton(onClick = { currentScreen = "ping" }) {
+                        Icon(imageVector = Icons.Filled.Home, contentDescription = "Home")
+                    }
+                },
+                backgroundColor = Color.White
+            )
+        },
+        content = { padding -> 16
+            when (currentScreen) {
+                "main" -> MainView()
+                "ping" -> Box(modifier = Modifier.padding(padding)) {
+                    PingHostView()
+                }
+            }
+        }
+    )
 }
