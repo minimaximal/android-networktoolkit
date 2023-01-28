@@ -101,6 +101,7 @@ fun PingHostView() {
 
 fun pingHost(result: MutableList<PingHostResult>, host: String, timeout: Int, numberOfPings: Int, delay: Long) {
     CoroutineScope(Dispatchers.Main).launch {
+        result.clear()
         var pings = 0
         while (pings < numberOfPings) {
             try {
