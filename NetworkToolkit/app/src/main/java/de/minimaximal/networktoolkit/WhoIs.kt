@@ -13,7 +13,7 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun WhoIsView() {
     //vals
-    var queryResult = remember {
+    val queryResult = remember {
         mutableStateOf("")
     }
 
