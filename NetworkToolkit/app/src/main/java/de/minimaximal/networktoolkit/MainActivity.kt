@@ -51,7 +51,7 @@ fun HomeScreen(){
           { contentPadding ->
            Box(modifier = Modifier.padding(contentPadding)) {
                when(currentScreen){
-                   "main" -> Text("aktuelle Ansicht: $currentScreen")
+                   "main" -> MainScreen()
                    "ping" -> PingHostView()
                    "whois" -> Text("aktuelle Ansicht: $currentScreen")
                }
