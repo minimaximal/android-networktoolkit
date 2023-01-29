@@ -2,6 +2,7 @@ package de.minimaximal.networktoolkit
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.Button
 import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Text
@@ -37,10 +38,25 @@ fun WhoIsView() {
         }) {
             Text("Go!")
         }
+        ResultsView(results = FormatQueryResult(queryResult.value))
+    }
 
+}
+
+@Composable
+fun ResultsView(results: List<String>){
+    LazyColumn(modifier = Modifier.padding(16.dp)){
+        items(results.size){
+                index -> Text(results[index])
+        }
     }
 }
 
 fun ExecuteWhoIsQuery(): String {
-    return ""
+    return "text\nmehrtext"
+}
+
+fun FormatQueryResult(queryResult: String): List<String> {
+    val formattedQuery = (queryResult.split('\n'))
+    return formattedQuery
 }
