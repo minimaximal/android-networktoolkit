@@ -3,9 +3,7 @@ package de.minimaximal.networktoolkit
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
@@ -25,13 +23,45 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colors.background
                 ) {
-                    // MainView()
-                    PingHostView()
+                    HomeScreen()
                 }
             }
         }
     }
 }
+
+@Preview(showBackground = true)
+@Composable
+fun HomeScreen(){
+   NetworkToolkitTheme() {
+       var currentScreen by remember { mutableStateOf("main") }
+       Scaffold(
+           topBar = {
+               TopAppBar() {
+                    Text("Network Toolkit")
+                   Button(onClick = { currentScreen = "ping" }) {
+                       Text("Ping")
+                   }
+                   Button(onClick = { currentScreen = "whois" }) {
+                       Text("WhoIs")
+                   }
+               }
+           }
+       )
+          { contentPadding ->
+           Box(modifier = Modifier.padding(contentPadding)) {
+               when(currentScreen){
+                   "main" -> Text("aktuelle Ansicht: $currentScreen")
+                   "ping" -> PingHostView()
+                   "whois" -> Text("aktuelle Ansicht: $currentScreen")
+               }
+
+       }
+
+   }
+}}
+
+
 
 @Composable
 fun MainView() {
