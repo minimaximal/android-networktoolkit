@@ -38,7 +38,9 @@ fun HomeScreen(){
        Scaffold(
            topBar = {
                TopAppBar() {
-                    Text("Network Toolkit")
+                   Button(onClick = { currentScreen = "main" }) {
+                       Text("Network Toolkit")
+                   }
                    Button(onClick = { currentScreen = "ping" }) {
                        Text("Ping")
                    }
