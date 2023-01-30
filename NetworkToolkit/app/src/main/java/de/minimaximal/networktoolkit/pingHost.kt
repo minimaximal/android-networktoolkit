@@ -60,7 +60,7 @@ fun PingHostView() {
         LazyRow(horizontalArrangement = Arrangement.spacedBy(30.dp)) {
             item {
                 Button(onClick = {
-                    clearCounter(result, statistics, message)
+                    clearPing(result, statistics, message)
                     try {
                         val timeoutInt = timeout.toInt()
                         val numberInt = numberOfPings.toInt()
@@ -78,7 +78,7 @@ fun PingHostView() {
             }
             item {
                 Button(onClick = {
-                    clearCounter(result, statistics, message)
+                    clearPing(result, statistics, message)
                 }) {
                     Text("CLEAR")
                 }
@@ -99,11 +99,11 @@ fun PingHostView() {
             ) {
                 items(result.size) { index ->
                     var output: String = when (result[index].state) {
-                        -1 -> (index + 1).toString() + " " + "I/O error, please check network or input\t\t"
+                        -1 -> (index + 1).toString() + " " + "I/O ERROR: check network connection or input parameters\t\t"
                         0 -> (index + 1).toString() + " " + host + " not reachable\t\t"
                         1 -> (index + 1).toString() + " " + host + " is reachable\t\t"
                         else -> {
-                            "general error"
+                            "GENERAL ERROR"
                         }
                     }
                     output += result[index].latency.toString() + " ms"
@@ -154,6 +154,7 @@ fun pingHostStatistics(
 
     var successfulPings = 0
     var totalLatency = 0
+    var averageLatency = 0
 
     result.forEach {
         if (it.state == 1) {
@@ -162,12 +163,18 @@ fun pingHostStatistics(
         }
     }
 
+
+    if (successfulPings > 0) {
+        averageLatency = totalLatency / successfulPings
+    }
+
+
     statistics.value = PingHostStatistics(
-        successfulPings, (successfulPings / numberOfPings) * 100, totalLatency / successfulPings
+        successfulPings, (successfulPings / numberOfPings) * 100, averageLatency
     )
 }
 
-fun clearCounter(
+fun clearPing(
     result: MutableList<PingHostResult>,
     statistics: MutableState<PingHostStatistics>,
     message: MutableState<String>

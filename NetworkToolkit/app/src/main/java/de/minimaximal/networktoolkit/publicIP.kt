@@ -1,18 +1,22 @@
+// TODO: https://stat.ripe.net/docs/02.data-api/address-space-usage.html
+// TODO: network message
+
 package de.minimaximal.networktoolkit
 
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.material.Button
 import androidx.compose.material.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import de.minimaximal.networktoolkit.api.ripe.addressspaceusage.Model
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import retrofit2.Call
+import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
 import retrofit2.http.GET
@@ -20,14 +24,13 @@ import retrofit2.http.Url
 
 @Composable
 fun PublicIpView() {
-
-    var ip by remember { mutableStateOf("") }
-    var assAdd by remember { mutableStateOf("") }
-    var assName by remember { mutableStateOf("") }
-    var allAdd by remember { mutableStateOf("") }
-    var allName by remember { mutableStateOf("") }
-    var asn by remember { mutableStateOf("") }
-
+    val message = remember { mutableStateOf("") }
+    val ip = remember { mutableStateOf("") }
+    val asn = remember { mutableStateOf("") }
+    val assAdd = remember { mutableStateOf("") }
+    val assName = remember { mutableStateOf("") }
+    val allAdd = remember { mutableStateOf("") }
+    val allName = remember { mutableStateOf("") }
 
 
     Column(
@@ -37,59 +40,54 @@ fun PublicIpView() {
         verticalArrangement = Arrangement.SpaceEvenly,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Button(onClick = {
-            ip = getWhatsMyIp()
-            assAdd = getAddressSpaceUsageAssAdd(ip)
-            assName = getAddressSpaceUsageAssName(ip)
-            allAdd = getAddressSpaceUsageAllAdd(ip)
-            allName = getAddressSpaceUsageAllName(ip)
-            asn = getNetworkInfo(ip)
-        }) {
-            Text("Get IP Address Information")
+
+        Row() {
+
+            Button(onClick = {
+                clearPubIP(message, ip, asn, assAdd, assName, allAdd, allName, true)
+                getWhatsMyIp(ip, message)
+            }) {
+                Text("get pulic IP")
+            }
+
+
+            Button(onClick = {
+                clearPubIP(message, ip, asn, assAdd, assName, allAdd, allName, true)
+            }) {
+                Text("clear")
+            }
         }
 
+
+        if (ip.value != "" && ip.value != errorIo && ip.value != errorNoInfo) {
+            Button(onClick = {
+                clearPubIP(message, ip, asn, assAdd, assName, allAdd, allName, false)
+                getNetworkInfo(ip.value, asn, message)
+                getAddressSpaceUsage(ip.value, assAdd, assName, allAdd, allName, message)
+            }) {
+                Text("get additional information")
+            }
+        }
+
+
+
         Text(
-            modifier = Modifier.clickable {
-                // Call the API to get the IP address
-                ip = getWhatsMyIp()
-            },
-            text = "IP: $ip",
-            fontSize = 30.sp
+            text = "IP: ${ip.value}",
         )
         Text(
-            modifier = Modifier.clickable {
-                asn = getNetworkInfo(ip)
-            },
-            text = "ASN: $asn",
-            fontSize = 30.sp
+            text = "ASN: ${asn.value}",
         )
         Text(
-            modifier = Modifier.clickable {
-                assAdd = getAddressSpaceUsageAssAdd(ip)
-            },
-            text = "Network: $assAdd",
-            fontSize = 30.sp
+            text = "Network: ${assAdd.value}",
         )
         Text(
-            modifier = Modifier.clickable {
-                assName = getAddressSpaceUsageAssName(ip)
-            },
-            text = "Network Name: $assName",
-            fontSize = 30.sp
+            text = "Network Name: ${assName.value}",
         )
         Text(
-            modifier = Modifier.clickable {
-                allAdd = getAddressSpaceUsageAllAdd(ip)
-            },
-            text = "AS Network: $allAdd",
-            fontSize = 30.sp
+            text = "AS Network: ${allAdd.value}",
         )
         Text(
-            modifier = Modifier.clickable {
-                allName = getAddressSpaceUsageAllName(ip)
-            },
-            text = "AS Name: $allName",
-            fontSize = 30.sp
+            text = "AS Name: ${allName.value}",
         )
 
     }
@@ -109,7 +107,7 @@ interface WhatsMyIpApi {
 
 interface AddressSpaceUsageApi {
     @GET
-    fun getAddressSpaceUsageApi(@Url url: String): Call<de.minimaximal.networktoolkit.api.ripe.addressspaceusage.Model>
+    fun getAddressSpaceUsageApi(@Url url: String): Call<Model>
 }
 
 interface NetworkInfoApi {
@@ -122,69 +120,167 @@ private val whatsmyip = retrofit?.create(WhatsMyIpApi::class.java)
 private val addressspaceusage = retrofit?.create(AddressSpaceUsageApi::class.java)
 private val networkinfo = retrofit?.create(NetworkInfoApi::class.java)
 
+private const val errorIo = "I/O ERROR: check network connection or input parameters"
+private const val errorNoInfo = "no information available"
 
-private fun getWhatsMyIp(): String {
-    val response = whatsmyip?.getWhatsMyIpApi()?.execute()
-    if (response != null) {
-        return response.body()?.data?.ip ?: "data"
-    }
-    return ""
-}
-
-private fun getAddressSpaceUsageAssAdd(ip: String): String {
-    val response =
-        addressspaceusage?.getAddressSpaceUsageApi("https://stat.ripe.net/data/address-space-usage/data.json?resource=$ip")
-            ?.execute()
-    if (response != null) {
-        if (response.body()?.data?.assignments?.isEmpty() == false) {
-            return response.body()?.data?.assignments?.get(0)?.address_range ?: "data"
+private fun getWhatsMyIp(ip: MutableState<String>, message: MutableState<String>) {
+    CoroutineScope(Dispatchers.Main).launch {
+        try {
+            val response = withContext(Dispatchers.IO) { whatsmyip?.getWhatsMyIpApi()?.execute() }
+            if (response != null) {
+                ip.value = (response.body()?.data?.ip ?: "data")
+            } else {
+                ip.value = errorNoInfo
+            }
+        } catch (e: Exception) {
+            message.value = errorIo
         }
     }
-    return ""
 }
 
-private fun getAddressSpaceUsageAssName(ip: String): String {
-    val response =
-        addressspaceusage?.getAddressSpaceUsageApi("https://stat.ripe.net/data/address-space-usage/data.json?resource=$ip")
-            ?.execute()
-    if (response != null) {
-        if (response.body()?.data?.assignments?.isEmpty() == false) {
-            return response.body()?.data?.assignments?.get(0)?.asn_name ?: "data"
+private fun getNetworkInfo(ip: String, Asn: MutableState<String>, message: MutableState<String>) {
+    CoroutineScope(Dispatchers.Main).launch {
+        try {
+            val response = withContext(Dispatchers.IO) {
+                networkinfo?.getNetworkInfoApi("https://stat.ripe.net/data/network-info/data.json?resource=$ip")
+                    ?.execute()
+            }
+            if (response != null) {
+                Asn.value = (response.body()?.data?.asns?.get(0) ?: "data")
+            } else {
+                Asn.value = errorNoInfo
+            }
+        } catch (e: Exception) {
+            message.value = errorIo
         }
     }
-    return ""
+
 }
 
-private fun getAddressSpaceUsageAllAdd(ip: String): String {
-    val response =
-        addressspaceusage?.getAddressSpaceUsageApi("https://stat.ripe.net/data/address-space-usage/data.json?resource=$ip")
-            ?.execute()
-    if (response != null) {
-        if (response.body()?.data?.allocations?.isEmpty() == false) {
-            return response.body()?.data?.allocations?.get(0)?.allocation ?: "data"
+
+private fun getAddressSpaceUsage(
+    ip: String,
+    AssAdd: MutableState<String>,
+    AssName: MutableState<String>,
+    AllAdd: MutableState<String>,
+    AllName: MutableState<String>,
+    message: MutableState<String>
+) {
+    CoroutineScope(Dispatchers.Main).launch {
+        try {
+            val response = withContext(Dispatchers.IO) {
+                addressspaceusage?.getAddressSpaceUsageApi("https://stat.ripe.net/data/address-space-usage/data.json?resource=$ip")
+                    ?.execute()
+            }
+
+            getAddressSpaceUsageAssAdd(AssAdd, message, response)
+            getAddressSpaceUsageAssName(AssName, message, response)
+            getAddressSpaceUsageAllAdd(AllAdd, message, response)
+            getAddressSpaceUsageAllName(AllName, message, response)
+
+        } catch (e: Exception) {
+            message.value = errorIo
         }
     }
-    return ""
 }
 
-private fun getAddressSpaceUsageAllName(ip: String): String {
-    val response =
-        addressspaceusage?.getAddressSpaceUsageApi("https://stat.ripe.net/data/address-space-usage/data.json?resource=$ip")
-            ?.execute()
-    if (response != null) {
-        if (response.body()?.data?.allocations?.isEmpty() == false) {
-            return response.body()?.data?.allocations?.get(0)?.asn_name ?: "data"
+private fun getAddressSpaceUsageAssAdd(
+    AssAdd: MutableState<String>,
+    message: MutableState<String>,
+    response: Response<Model>?
+) {
+    CoroutineScope(Dispatchers.Main).launch {
+        try {
+            AssAdd.value = errorNoInfo
+            if (response != null) {
+                if (response.body()?.data?.assignments?.isEmpty() == false) {
+                    AssAdd.value =
+                        response.body()?.data?.assignments?.get(0)?.address_range ?: "data"
+                }
+            }
+        } catch (e: Exception) {
+            message.value = errorIo
         }
     }
-    return ""
 }
 
-private fun getNetworkInfo(ip: String): String {
-    val response =
-        networkinfo?.getNetworkInfoApi("https://stat.ripe.net/data/network-info/data.json?resource=$ip")
-            ?.execute()
-    if (response != null) {
-        return response.body()?.data?.asns?.get(0) ?: "data"
+private fun getAddressSpaceUsageAssName(
+    AssName: MutableState<String>,
+    message: MutableState<String>,
+    response: Response<Model>?
+) {
+    CoroutineScope(Dispatchers.Main).launch {
+        try {
+            AssName.value = errorNoInfo
+            if (response != null) {
+                if (response.body()?.data?.assignments?.isEmpty() == false) {
+                    AssName.value = response.body()?.data?.assignments?.get(0)?.asn_name ?: "data"
+                }
+            }
+        } catch (e: Exception) {
+            message.value = errorIo
+        }
     }
-    return ""
+}
+
+private fun getAddressSpaceUsageAllAdd(
+    AllAdd: MutableState<String>,
+    message: MutableState<String>,
+    response: Response<Model>?
+) {
+    CoroutineScope(Dispatchers.Main).launch {
+        try {
+            AllAdd.value = errorNoInfo
+            if (response != null) {
+                if (response.body()?.data?.allocations?.isEmpty() == false) {
+                    AllAdd.value = response.body()?.data?.allocations?.get(0)?.allocation ?: "data"
+                }
+            }
+
+
+        } catch (e: Exception) {
+            message.value = errorIo
+        }
+    }
+}
+
+private fun getAddressSpaceUsageAllName(
+    AllName: MutableState<String>,
+    message: MutableState<String>,
+    response: Response<Model>?
+) {
+    CoroutineScope(Dispatchers.Main).launch {
+        try {
+            AllName.value = errorNoInfo
+            if (response != null) {
+                if (response.body()?.data?.allocations?.isEmpty() == false) {
+                    AllName.value = response.body()?.data?.allocations?.get(0)?.asn_name ?: "data"
+                }
+            }
+        } catch (e: Exception) {
+            message.value = errorIo
+        }
+    }
+}
+
+
+private fun clearPubIP(
+    message: MutableState<String>,
+    ip: MutableState<String>,
+    asn: MutableState<String>,
+    assAdd: MutableState<String>,
+    assName: MutableState<String>,
+    allAdd: MutableState<String>,
+    allName: MutableState<String>,
+    withIp: Boolean
+) {
+    message.value = ""
+    if (withIp) {
+        ip.value = ""
+    }
+    asn.value = ""
+    assAdd.value = ""
+    assName.value = ""
+    allAdd.value = ""
+    allName.value = ""
 }
