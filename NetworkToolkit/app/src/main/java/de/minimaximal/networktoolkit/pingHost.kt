@@ -1,6 +1,3 @@
-// TODO: scrollbar in result list: vertical, optional horizontal
-// TODO: ping again crashed
-
 package de.minimaximal.networktoolkit
 
 import androidx.compose.foundation.layout.Arrangement
@@ -22,7 +19,7 @@ import java.net.InetAddress
 
 @Composable
 fun PingHostView() {
-    var message by remember { mutableStateOf("") }
+    val message = remember { mutableStateOf("") }
     val result = remember { mutableStateListOf<PingHostResult>() }
     val statistics = remember { mutableStateOf(PingHostStatistics(null, null, null)) }
     var host by remember { mutableStateOf("hk.de") }
@@ -32,11 +29,9 @@ fun PingHostView() {
 
 
     Column(modifier = Modifier.padding(16.dp)) {
-        TextField(
-            value = host,
+        TextField(value = host,
             onValueChange = { host = it },
-            label = { Text("Enter host to ping:") }
-        )
+            label = { Text("Enter host to ping:") })
 
         TextField(
             value = numberOfPings,
@@ -61,30 +56,38 @@ fun PingHostView() {
 
 
 
-        Button(onClick = {
-            message = ""
-            result.clear()
-            statistics.value.averageLatency = null
-            statistics.value.successfulPings = null
-            statistics.value.successPercentage = null
-            try {
-                val timeoutInt = timeout.toInt()
-                val numberInt = numberOfPings.toInt()
-                val delayLong = delay.toLong()
-                if (timeoutInt == 0 || numberInt == 0 || delayLong == 0.toLong()) {
-                    message = "ERROR: zero is not allowed as input"
-                }
-                pingHost(result, host, timeoutInt, numberInt, delayLong, statistics)
-            } catch (e: Exception) {
-                message = "ERROR: please check your input parameters"
-            }
 
-        }) {
-            Text("Ping it")
+        LazyRow(horizontalArrangement = Arrangement.spacedBy(30.dp)) {
+            item {
+                Button(onClick = {
+                    clearCounter(result, statistics, message)
+                    try {
+                        val timeoutInt = timeout.toInt()
+                        val numberInt = numberOfPings.toInt()
+                        val delayLong = delay.toLong()
+                        if (timeoutInt == 0 || numberInt == 0 || delayLong == 0.toLong()) {
+                            message.value = "ERROR: zero is not allowed as input"
+                        }
+                        pingHost(result, host, timeoutInt, numberInt, delayLong, statistics)
+                    } catch (e: Exception) {
+                        message.value = "ERROR: please check your input parameters"
+                    }
+                }) {
+                    Text("PING")
+                }
+            }
+            item {
+                Button(onClick = {
+                    clearCounter(result, statistics, message)
+                }) {
+                    Text("CLEAR")
+                }
+            }
         }
 
-        if (message != "") {
-            Text(text = message)
+
+        if (message.value != "") {
+            Text(text = message.value)
         } else {
             if (statistics.value.successfulPings != null && statistics.value.successPercentage != null && statistics.value.averageLatency != null) {
                 Text(text = statistics.value.successfulPings.toString() + " successful Pings of " + numberOfPings + " total Pings (" + statistics.value.successPercentage.toString() + "% success rate)")
@@ -93,24 +96,18 @@ fun PingHostView() {
             LazyColumn(
                 verticalArrangement = Arrangement.spacedBy(4.dp),
                 contentPadding = PaddingValues(horizontal = 12.dp, vertical = 24.dp)
-            )
-            {
+            ) {
                 items(result.size) { index ->
-                    LazyRow(horizontalArrangement = Arrangement.spacedBy(30.dp)) {
-                        item {
-                            when (result[index].state) {
-                                -1 -> Text(text = (index + 1).toString() + " " + "I/O error, please check network or input")
-                                0 -> Text(text = (index + 1).toString() + " " + host + " not reachable")
-                                1 -> Text(text = (index + 1).toString() + " " + host + " is reachable")
-                                else -> {
-                                    Text(text = "general error")
-                                }
-                            }
-                        }
-                        item {
-                            Text(text = result[index].latency.toString() + " ms")
+                    var output: String = when (result[index].state) {
+                        -1 -> (index + 1).toString() + " " + "I/O error, please check network or input\t\t"
+                        0 -> (index + 1).toString() + " " + host + " not reachable\t\t"
+                        1 -> (index + 1).toString() + " " + host + " is reachable\t\t"
+                        else -> {
+                            "general error"
                         }
                     }
+                    output += result[index].latency.toString() + " ms"
+                    Text(text = output)
                 }
             }
         }
@@ -166,16 +163,22 @@ fun pingHostStatistics(
     }
 
     statistics.value = PingHostStatistics(
-        successfulPings,
-        (successfulPings / numberOfPings) * 100,
-        totalLatency / successfulPings
+        successfulPings, (successfulPings / numberOfPings) * 100, totalLatency / successfulPings
     )
+}
+
+fun clearCounter(
+    result: MutableList<PingHostResult>,
+    statistics: MutableState<PingHostStatistics>,
+    message: MutableState<String>
+) {
+    message.value = ""
+    result.clear()
+    statistics.value = PingHostStatistics(null, null, null)
 }
 
 
 data class PingHostResult(val state: Int, val latency: Long)
 data class PingHostStatistics(
-    var successfulPings: Int?,
-    var successPercentage: Int?,
-    var averageLatency: Int?
+    var successfulPings: Int?, var successPercentage: Int?, var averageLatency: Int?
 )
