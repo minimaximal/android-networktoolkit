@@ -1,6 +1,5 @@
-// TODO: instant / faster ui update of result list
 // TODO: scrollbar in result list: vertical, optional horizontal
-// TODO: statistics are not displayed if there is any not working
+// TODO: ping again crashed
 
 package de.minimaximal.networktoolkit
 
@@ -14,10 +13,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.Button
 import androidx.compose.material.Text
 import androidx.compose.material.TextField
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -26,39 +22,39 @@ import java.net.InetAddress
 
 @Composable
 fun PingHostView() {
-    val message = remember { mutableStateOf("") }
-    val result = remember { mutableListOf<PingHostResult>() }
+    var message by remember { mutableStateOf("") }
+    val result = remember { mutableStateListOf<PingHostResult>() }
     val statistics = remember { mutableStateOf(PingHostStatistics(null,null,null)) }
-    val host = remember { mutableStateOf("hk.de") }
-    val timeout = remember { mutableStateOf("5000") }
-    val numberOfPings = remember { mutableStateOf("5") }
-    val delay = remember { mutableStateOf("100") }
+    var host by remember { mutableStateOf("hk.de") }
+    var timeout by remember { mutableStateOf("5000") }
+    var numberOfPings by remember { mutableStateOf("5") }
+    var delay by remember { mutableStateOf("100") }
 
 
     Column(modifier = Modifier.padding(16.dp)) {
         TextField(
-            value = host.value,
-            onValueChange = { host.value = it },
+            value = host,
+            onValueChange = { host = it },
             label = { Text("Enter host to ping:") }
         )
 
         TextField(
-            value = numberOfPings.value,
-            onValueChange = { numberOfPings.value = it },
+            value = numberOfPings,
+            onValueChange = { numberOfPings = it },
             label = { Text("Enter number of pings:") },
             keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
         )
 
         TextField(
-            value = timeout.value,
-            onValueChange = { timeout.value = it },
+            value = timeout,
+            onValueChange = { timeout = it },
             label = { Text("Enter timeout for a ping:") },
             keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
         )
 
         TextField(
-            value = delay.value,
-            onValueChange = { delay.value = it },
+            value = delay,
+            onValueChange = { delay= it },
             label = { Text("Enter delay between pings:") },
             keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
         )
@@ -67,25 +63,34 @@ fun PingHostView() {
 
 
         Button(onClick = {
-            message.value = ""
+            message = ""
             result.clear()
-            statistics
+            statistics.value.averageLatency = null
+            statistics.value.successfulPings = null
+            statistics.value.successPercentage = null
             try {
-                val timeoutInt = timeout.value.toInt();
-                val numberInt = numberOfPings.value.toInt();
-                val delayLong = delay.value.toLong();
-                pingHost(result, host.value, timeoutInt, numberInt, delayLong, statistics)
+                val timeoutInt = timeout.toInt()
+                val numberInt = numberOfPings.toInt()
+                val delayLong = delay.toLong()
+                if (timeoutInt == 0 || numberInt == 0 || delayLong == 0.toLong()){
+                    message = "ERROR: zero is not allowed as input"
+                }
+                pingHost(result, host, timeoutInt, numberInt, delayLong, statistics)
             } catch (e: Exception) {
-                message.value = "ERROR: please check your input parameters"
+                message = "ERROR: please check your input parameters"
             }
 
         }) {
             Text("Ping it")
         }
 
-        if (message.value != "") {
-            Text(text = message.value)
+        if (message != "") {
+            Text(text = message)
         } else {
+            if (statistics.value.successfulPings != null && statistics.value.successPercentage != null && statistics.value.averageLatency != null ) {
+                Text(text = statistics.value.successfulPings.toString() + " successful Pings of " + numberOfPings + " total Pings (" + statistics.value.successPercentage.toString() + "% success rate)")
+                Text(text = statistics.value.averageLatency.toString() + "ms average latency")
+            }
             LazyColumn(
                 verticalArrangement = Arrangement.spacedBy(4.dp),
                 contentPadding = PaddingValues(horizontal = 12.dp, vertical = 24.dp)
@@ -96,8 +101,8 @@ fun PingHostView() {
                         item {
                             when (result[index].state) {
                                 -1 -> Text(text = (index + 1).toString() + " " + "I/O error, please check network or input")
-                                0 -> Text(text = (index + 1).toString() + " " + host.value + " not reachable")
-                                1 -> Text(text = (index + 1).toString() + " " + host.value + " is reachable")
+                                0 -> Text(text = (index + 1).toString() + " " + host + " not reachable")
+                                1 -> Text(text = (index + 1).toString() + " " + host + " is reachable")
                                 else -> {
                                     Text(text = "general error")
                                 }
@@ -109,17 +114,9 @@ fun PingHostView() {
                     }
                 }
             }
-            if (statistics.value.successfulPings != null && statistics.value.successPercentage != null && statistics.value.averageLatency != null ) {
-                Text(text = statistics.value.successfulPings.toString() + " successful Pings of " + numberOfPings.value + " total Pings (" + statistics.value.successPercentage.toString() + "% success rate)")
-                Text(text = statistics.value.averageLatency.toString() + "ms average latency")
-            }
         }
     }
 }
-
-
-
-
 
 
 fun pingHost(result: MutableList<PingHostResult>, host: String, timeout: Int, numberOfPings: Int, delay: Long, statistics: MutableState<PingHostStatistics>) {
@@ -158,9 +155,7 @@ fun pingHostStatistics(result: MutableList<PingHostResult>, numberOfPings: Int, 
         }
     }
 
-    statistics.value.successfulPings = successfulPings
-    statistics.value.successPercentage = (successfulPings / numberOfPings) * 100
-    statistics.value.averageLatency = totalLatency / successfulPings
+    statistics.value = PingHostStatistics(successfulPings, (successfulPings / numberOfPings) * 100, totalLatency / successfulPings)
 }
 
 

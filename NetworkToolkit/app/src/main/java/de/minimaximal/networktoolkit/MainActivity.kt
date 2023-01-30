@@ -44,6 +44,9 @@ fun HomeScreen(){
                    Button(onClick = { currentScreen = "ping" }) {
                        Text("Ping")
                    }
+                   Button(onClick = { currentScreen = "publicip" }) {
+                       Text("Public IP")
+                   }
                    Button(onClick = { currentScreen = "whois" }) {
                        Text("WhoIs")
                    }
@@ -55,13 +58,15 @@ fun HomeScreen(){
                when(currentScreen){
                    "main" -> MainScreen()
                    "ping" -> PingHostView()
+                   "publicip" -> PublicIpView()
                    "whois" -> Text("aktuelle Ansicht: $currentScreen")
                }
 
        }
 
    }
-}}
+}
+}
 
 
 
