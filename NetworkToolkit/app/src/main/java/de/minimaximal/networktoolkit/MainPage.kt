@@ -3,8 +3,12 @@
 package de.minimaximal.networktoolkit
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.ExperimentalTextApi
@@ -12,11 +16,14 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.unit.dp
 
 @OptIn(ExperimentalTextApi::class)
 @Composable
 fun MainScreen() {
-    Column {
+    Column (modifier = Modifier
+        .fillMaxSize()
+        .padding(horizontal = 16.dp, vertical = 30.dp), horizontalAlignment = Alignment.CenterHorizontally,) {
         Text(
             buildAnnotatedString {
                 append("Willkommen im ")
@@ -31,31 +38,18 @@ fun MainScreen() {
                         ), fontWeight = FontWeight.Bold
                     )
                 ) {
-                    append("Networktoolkit")
+                    append("Networktoolkit,\n\n")
                 }
-                append(",\n\nin der Kopfzeile der App sehen Sie die verfügbaren Tools. Es gibt die \"")
+                append("mit einem Klick auf \"")
                 withStyle(style = SpanStyle(fontWeight = FontWeight.Bold, color = Color.Blue)) {
-                    append("Ping")
+                    append("Network Toolkit")
                 }
-                append("\" und \"")
+                append("\" in der Kopfzeile oder durch ")
                 withStyle(style = SpanStyle(fontWeight = FontWeight.Bold, color = Color.Blue)) {
-                    append("WhoIs")
+                    append("Swipen von links nach rechts")
                 }
-                append("\" Funktion. Unter  \"")
-                withStyle(style = SpanStyle(fontWeight = FontWeight.Bold, color = Color.Blue)) {
-                    append("Ping")
-                }
-                append("\" kann ein beliebiger Host angepingt werden. Unter  \"")
-                withStyle(style = SpanStyle(fontWeight = FontWeight.Bold, color = Color.Blue)) {
-                    append("WhoIs")
-                }
-                append("\" können Informationen zu einem gewünschten Host ausgelesen werden.")
-            }
-        )
-        Text("Wir wünschen viel Spaß beim Verwenden unserer App, bei Fragen stehen wir Ihnen gerne zur Verfügung.\n")
-        Text(
-            buildAnnotatedString {
-                append("Ihr ")
+                append(", gelangen Sie ins Menü. Dort kann das gewünschte Tool ausgewählt werden.\n\n")
+                append("Wir wünschen viel Spaß beim Verwenden unserer App, bei Fragen stehen wir Ihnen gerne zur Verfügung.\n\nIhr ")
                 withStyle(
                     style = SpanStyle(
                         Brush.linearGradient(
@@ -68,8 +62,9 @@ fun MainScreen() {
                     )
                 ) {
                     append("Networktoolkit Team")
+                    append(" (Maximilian Koch, Paul Antoni, Viktoria Gönnheimer)")
+
                 }
-                append(" (Maximilian Koch, Paul Antoni, Viktoria Gönnheimer)")
             }
         )
     }
