@@ -24,7 +24,7 @@ import java.net.InetAddress
 fun PingHostView() {
     var message by remember { mutableStateOf("") }
     val result = remember { mutableStateListOf<PingHostResult>() }
-    val statistics = remember { mutableStateOf(PingHostStatistics(null,null,null)) }
+    val statistics = remember { mutableStateOf(PingHostStatistics(null, null, null)) }
     var host by remember { mutableStateOf("hk.de") }
     var timeout by remember { mutableStateOf("5000") }
     var numberOfPings by remember { mutableStateOf("5") }
@@ -54,11 +54,10 @@ fun PingHostView() {
 
         TextField(
             value = delay,
-            onValueChange = { delay= it },
+            onValueChange = { delay = it },
             label = { Text("Enter delay between pings:") },
             keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
         )
-
 
 
 
@@ -72,7 +71,7 @@ fun PingHostView() {
                 val timeoutInt = timeout.toInt()
                 val numberInt = numberOfPings.toInt()
                 val delayLong = delay.toLong()
-                if (timeoutInt == 0 || numberInt == 0 || delayLong == 0.toLong()){
+                if (timeoutInt == 0 || numberInt == 0 || delayLong == 0.toLong()) {
                     message = "ERROR: zero is not allowed as input"
                 }
                 pingHost(result, host, timeoutInt, numberInt, delayLong, statistics)
@@ -87,7 +86,7 @@ fun PingHostView() {
         if (message != "") {
             Text(text = message)
         } else {
-            if (statistics.value.successfulPings != null && statistics.value.successPercentage != null && statistics.value.averageLatency != null ) {
+            if (statistics.value.successfulPings != null && statistics.value.successPercentage != null && statistics.value.averageLatency != null) {
                 Text(text = statistics.value.successfulPings.toString() + " successful Pings of " + numberOfPings + " total Pings (" + statistics.value.successPercentage.toString() + "% success rate)")
                 Text(text = statistics.value.averageLatency.toString() + "ms average latency")
             }
@@ -119,7 +118,14 @@ fun PingHostView() {
 }
 
 
-fun pingHost(result: MutableList<PingHostResult>, host: String, timeout: Int, numberOfPings: Int, delay: Long, statistics: MutableState<PingHostStatistics>) {
+fun pingHost(
+    result: MutableList<PingHostResult>,
+    host: String,
+    timeout: Int,
+    numberOfPings: Int,
+    delay: Long,
+    statistics: MutableState<PingHostStatistics>
+) {
     CoroutineScope(Dispatchers.Main).launch {
         var pings = 0
         while (pings < numberOfPings) {
@@ -141,9 +147,13 @@ fun pingHost(result: MutableList<PingHostResult>, host: String, timeout: Int, nu
         }
         pingHostStatistics(result, numberOfPings, statistics)
     }
- }
+}
 
-fun pingHostStatistics(result: MutableList<PingHostResult>, numberOfPings: Int, statistics: MutableState<PingHostStatistics>){
+fun pingHostStatistics(
+    result: MutableList<PingHostResult>,
+    numberOfPings: Int,
+    statistics: MutableState<PingHostStatistics>
+) {
 
     var successfulPings = 0
     var totalLatency = 0
@@ -155,10 +165,17 @@ fun pingHostStatistics(result: MutableList<PingHostResult>, numberOfPings: Int, 
         }
     }
 
-    statistics.value = PingHostStatistics(successfulPings, (successfulPings / numberOfPings) * 100, totalLatency / successfulPings)
+    statistics.value = PingHostStatistics(
+        successfulPings,
+        (successfulPings / numberOfPings) * 100,
+        totalLatency / successfulPings
+    )
 }
 
 
-
-data class PingHostResult (val state: Int, val latency: Long)
-data class PingHostStatistics(var successfulPings: Int?, var successPercentage: Int?, var averageLatency: Int?)
+data class PingHostResult(val state: Int, val latency: Long)
+data class PingHostStatistics(
+    var successfulPings: Int?,
+    var successPercentage: Int?,
+    var averageLatency: Int?
+)
