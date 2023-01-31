@@ -18,10 +18,7 @@ import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.Density
-import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.LayoutDirection
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.*
 import de.minimaximal.networktoolkit.ui.theme.NetworkToolkitTheme
 import kotlinx.coroutines.launch
 
@@ -54,7 +51,8 @@ fun HomeScreen(contextWrapper: ContextWrapper) {
         var textStyle = TextStyle(
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colors.secondary,
-            textAlign = TextAlign.Left
+            textAlign = TextAlign.Left,
+            fontSize = 20.sp
         )
         Scaffold(
             scaffoldState = scaffoldState,
@@ -62,7 +60,9 @@ fun HomeScreen(contextWrapper: ContextWrapper) {
             drawerContent = {
                 arrScreens.forEach() { element ->
                     if (element != "main") textStyle = TextStyle(
-                        textAlign = TextAlign.Left
+                        textAlign = TextAlign.Left,
+                        fontSize = 20.sp
+
                     )
                     TextButton(onClick = {
                         currentScreen = element
