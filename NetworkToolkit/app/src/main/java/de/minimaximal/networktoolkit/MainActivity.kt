@@ -13,8 +13,10 @@ import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Outline
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
@@ -48,11 +50,19 @@ fun HomeScreen(contextWrapper: ContextWrapper) {
         val scaffoldState = rememberScaffoldState()
         val scope = rememberCoroutineScope()
         val arrScreens = arrayOf("main","ping","publicip","whois")
+        var textStyle = TextStyle(
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colors.secondary,
+            textAlign = TextAlign.Left
+        )
         Scaffold(
             scaffoldState = scaffoldState,
             drawerShape = NavShape(0.dp, 0.5f),
             drawerContent = {
                     arrScreens.forEach() { element ->
+                        if (element != "main")textStyle= TextStyle(
+                            textAlign = TextAlign.Left
+                        )
                         TextButton(onClick = {
                             currentScreen = element
                             scope.launch {
@@ -61,7 +71,7 @@ fun HomeScreen(contextWrapper: ContextWrapper) {
                                 }
                             }
                         }, modifier = Modifier.padding(horizontal = 16.dp)) {
-                            Text(getTitle(element), textAlign = TextAlign.Center )
+                            Text(getTitle(element), style = textStyle)
                         }
                         Divider()
 
@@ -80,7 +90,7 @@ fun HomeScreen(contextWrapper: ContextWrapper) {
                     }) {
                         Text(text = "Network Toolkit")
                     }
-                    Text(getTitle(currentScreen))
+                    Text(getTitle(currentScreen), modifier = Modifier.padding(16.dp))
                 }
             }
         )
