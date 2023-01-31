@@ -72,13 +72,12 @@ fun IpStackView(contextWrapper: ContextWrapper) {
             item {
                 Text(text = "default gateway: " + gate.value)
             }
-            item(dns.value.dnsServer?.size ?: 0) {
-                val index = index
-                val server = dns.value.dnsServer?.get(index)
-                if (server != null) {
-                    Text(text = "dns($index): $server")
+            dns.value.dnsServer?.let {
+                items(it.size) { index ->
+                    Text(text = "dns server(" + index + "): " + dns.value.dnsServer!![index])
                 }
             }
+
 
 
             item {
@@ -126,7 +125,7 @@ fun getDns(cm: ConnectivityManager, dns: MutableState<Dns>) {
         dnsServers.add(it.address.toString().removePrefix("/"))
     }
     if (dnsServers.isEmpty()) {
-        dnsServers[0] = "no dns server found"
+        dnsServers.add("no dns server found")
     }
     val domainName = network?.domains
     dns.value = domainName?.let { Dns(dnsServers, it) }!!

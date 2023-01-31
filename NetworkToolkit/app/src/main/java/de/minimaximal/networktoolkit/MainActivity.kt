@@ -1,5 +1,6 @@
 package de.minimaximal.networktoolkit
 
+import android.content.ContextWrapper
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -9,9 +10,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import de.minimaximal.networktoolkit.ui.theme.NetworkToolkitTheme
 import kotlinx.coroutines.launch
@@ -27,21 +25,21 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colors.background
                 ) {
-                    HomeScreen()
+                    val contextWrapper = ContextWrapper(this)
+                    HomeScreen(contextWrapper)
                 }
             }
         }
     }
 }
 
-@Preview(showBackground = true)
 @Composable
-fun HomeScreen() {
+fun HomeScreen(contextWrapper: ContextWrapper) {
     NetworkToolkitTheme {
         var currentScreen by remember { mutableStateOf("main") }
         val scaffoldState = rememberScaffoldState()
         val scope = rememberCoroutineScope()
-        val arrScreens = arrayOf("main","ping","publicip","whois")
+        val arrScreens = arrayOf("main", "ipstack", "ping", "publicip", "whois")
         Scaffold(
             scaffoldState = scaffoldState,
             drawerContent = {
@@ -54,7 +52,7 @@ fun HomeScreen() {
                             }
                         }
                     }, modifier = Modifier.padding(horizontal = 16.dp)) {
-                        Text(getTitle(element) )
+                        Text(getTitle(element))
                     }
                     Divider()
 
@@ -81,6 +79,7 @@ fun HomeScreen() {
             Box(modifier = Modifier.padding(contentPadding)) {
                 when (currentScreen) {
                     "main" -> MainScreen()
+                    "ipstack" -> IpStackView(contextWrapper)
                     "ping" -> PingHostView()
                     "publicip" -> PublicIpView()
                     "whois" -> Text("aktuelle Ansicht: $currentScreen")
@@ -93,11 +92,12 @@ fun HomeScreen() {
 
 private fun getTitle(screen: String): String {
     var title = "Übersicht"
-    when(screen){
-        "main"      -> title = "Übersicht"
-        "ping"      -> title = "Ping"
-        "publicip"  -> title = "Public Ip"
-        "whois"     -> title = "Who Is"
+    when (screen) {
+        "main" -> title = "Übersicht"
+        "ipstack" -> title = "IP Stack"
+        "ping" -> title = "Ping"
+        "publicip" -> title = "Public IP"
+        "whois" -> title = "Who Is"
     }
     return title
 }
