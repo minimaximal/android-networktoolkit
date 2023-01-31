@@ -1,5 +1,4 @@
 package de.minimaximal.networktoolkit
-
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -10,12 +9,21 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import retrofit2.Call
+import retrofit2.Retrofit
+import retrofit2.converter.moshi.MoshiConverterFactory
+import retrofit2.http.GET
+import retrofit2.http.Headers
+import retrofit2.http.Url
+
 
 @Composable
 fun WhoIsView() {
-    //vals
     val queryResult = remember {
-        mutableStateOf("")
+        mutableStateListOf<String>()
     }
 
     Column(modifier = Modifier.padding(16.dp)){
@@ -29,16 +37,18 @@ fun WhoIsView() {
         )
 
         Button(onClick = {
-            queryResult.value = ""
+            queryResult.add("")
+            queryResult.removeRange(0, queryResult.lastIndex)
             try{
-                queryResult.value = ExecuteWhoIsQuery()
+                queryResult.addAll(executeWhoIsQuery("google.com"))//todo remove hardcoded address
             } catch (e: Exception){
-                //todo: fix this
+                queryResult.add("Error while trying to get Whois information")
+                queryResult.add("Please check your internet connection and your input")
             }
         }) {
             Text("Go!")
         }
-        ResultsView(results = FormatQueryResult(queryResult.value))
+        ResultsView(results = queryResult.toList())
     }
 
 }
@@ -52,11 +62,43 @@ fun ResultsView(results: List<String>){
     }
 }
 
-fun ExecuteWhoIsQuery(): String {
-    return "text\nmehrtext"
+fun executeWhoIsQuery(domainName: String): List<String> {
+
+
+    var result = emptyList<String>()
+    val retrofit: Retrofit? = Retrofit.Builder()
+        .baseUrl("https://whoisapi-whois-v2-v1.p.rapidapi.com/")
+        .addConverterFactory(MoshiConverterFactory.create())
+        .build()
+    val networkinfo = retrofit?.create(WhoIsApiInterface::class.java)
+
+    CoroutineScope(Dispatchers.IO).launch{
+
+        val response =
+            networkinfo?.getWhoIsInfo("whoisserver/WhoisService?domainName=$domainName&apiKey=at_G0oAXgpjZaZlr7wFw90QeCqyv2dDE&outputFormat=JSON")
+                ?.execute()
+
+        val responseMessage = response?.body()!!
+        result = formatQueryResult(responseMessage)
+
+    }
+    result = result.ifEmpty { listOf("data") }
+    return result
 }
 
-fun FormatQueryResult(queryResult: String): List<String> {
-    val formattedQuery = (queryResult.split('\n'))
+interface WhoIsApiInterface{
+    @Headers("X-RapidAPI-Key: 50067bc5edmshc4f30e2b88e5c4fp15f033jsn21160563506f", "X-RapidAPI-Host: whoisapi-whois-v2-v1.p.rapidapi.com")
+    @GET
+    fun getWhoIsInfo(@Url url: String): Call<WhoisRecord>
+}
+
+
+fun formatQueryResult(queryResult: WhoisRecord): List<String> {
+    var formattedQuery = emptyList<String>()
+    formattedQuery = formattedQuery.toMutableList()
+    formattedQuery.add("creation date: ${queryResult.createdDate}")
+    formattedQuery.add("update date: ${queryResult.updatedDate}")
+    formattedQuery.add("expiration date: ${queryResult.expiresDate}")
+
     return formattedQuery
 }
