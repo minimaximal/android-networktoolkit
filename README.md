@@ -1,5 +1,5 @@
 # Android Networktoolkit
-## Informationen für Herr Broadhacker
+## Informationen für Herr Brodhaecker
 ### Implementierte Features
 - Auslesen lokaler IP Stack
   - IP Adresse
@@ -24,7 +24,7 @@ Das Auslesen des IP Stacks liefert im Emulator keine sinnvollen Werte.</p>
 
 ### Aufgetretene Probleme
 - Verlust eines Teammitglieds durch Exmatrikulation
-- Aufgrund von Problemen beim Parsen der Empfangen Daten wurde sich nach 10h Debugging dazu entschieden das Feature nicht zu implementieren. (siehe whois Branch)
+- Aufgrund von Problemen beim Parsen der Empfangenen Daten wurde sich nach 10h Debugging dazu entschieden das Feature nicht zu implementieren. (siehe whois Branch)
 
 ### Anmerkungen
 <p>In der Contributor Liste von GitHub ist aus unbekannten technischen Gründen Paul Antoni nicht aufgeführt. -> siehe Commit History</p>
