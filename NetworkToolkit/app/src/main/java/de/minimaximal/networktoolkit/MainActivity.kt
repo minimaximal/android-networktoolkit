@@ -4,7 +4,9 @@ import android.content.ContextWrapper
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -14,7 +16,6 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Outline
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Density
@@ -49,7 +50,7 @@ fun HomeScreen(contextWrapper: ContextWrapper) {
         var currentScreen by remember { mutableStateOf("main") }
         val scaffoldState = rememberScaffoldState()
         val scope = rememberCoroutineScope()
-        val arrScreens = arrayOf("main","ping","publicip","whois")
+        val arrScreens = arrayOf("main", "ipstack", "ping", "publicip")
         var textStyle = TextStyle(
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colors.secondary,
@@ -59,23 +60,23 @@ fun HomeScreen(contextWrapper: ContextWrapper) {
             scaffoldState = scaffoldState,
             drawerShape = NavShape(0.dp, 0.5f),
             drawerContent = {
-                    arrScreens.forEach() { element ->
-                        if (element != "main")textStyle= TextStyle(
-                            textAlign = TextAlign.Left
-                        )
-                        TextButton(onClick = {
-                            currentScreen = element
-                            scope.launch {
-                                scaffoldState.drawerState.apply {
-                                    if (isClosed) open() else close()
-                                }
+                arrScreens.forEach() { element ->
+                    if (element != "main") textStyle = TextStyle(
+                        textAlign = TextAlign.Left
+                    )
+                    TextButton(onClick = {
+                        currentScreen = element
+                        scope.launch {
+                            scaffoldState.drawerState.apply {
+                                if (isClosed) open() else close()
                             }
-                        }, modifier = Modifier.padding(horizontal = 16.dp)) {
-                            Text(getTitle(element), style = textStyle)
                         }
-                        Divider()
-
+                    }, modifier = Modifier.padding(horizontal = 16.dp)) {
+                        Text(getTitle(element), style = textStyle)
                     }
+                    Divider()
+
+                }
 
             },
 
@@ -101,7 +102,6 @@ fun HomeScreen(contextWrapper: ContextWrapper) {
                     "ipstack" -> IpStackView(contextWrapper)
                     "ping" -> PingHostView()
                     "publicip" -> PublicIpView()
-                    "whois" -> Text("aktuelle Ansicht: $currentScreen")
                 }
 
             }
@@ -110,13 +110,12 @@ fun HomeScreen(contextWrapper: ContextWrapper) {
 }
 
 private fun getTitle(screen: String): String {
-    var title = "Übersicht"
+    var title = "OVERVIEW"
     when (screen) {
-        "main" -> title = "Übersicht"
-        "ipstack" -> title = "IP Stack"
-        "ping" -> title = "Ping"
-        "publicip" -> title = "Public IP"
-        "whois" -> title = "Who Is"
+        "main" -> title = "OVERVIEW"
+        "ipstack" -> title = "IP STACK"
+        "ping" -> title = "PING"
+        "publicip" -> title = "PUBLIC IP"
     }
     return title
 }
