@@ -103,19 +103,19 @@ fun IpStackView(contextWrapper: ContextWrapper) {
             }
 
 
-            if (dns.value.domainName == null) {
+            if (dns.value.domainName != null) {
                 item {
                     Text(text = "domain name: " + dns.value.domainName)
                 }
             }
 
-            if (dhcp.value.dhcpServer == null) {
+            if (dhcp.value.dhcpServer != null) {
                 item {
                     Text(text = "dhcp server: " + dhcp.value.dhcpServer)
                 }
             }
 
-            if (dhcp.value.dhcpLease == null) {
+            if (dhcp.value.dhcpLease != null) {
                 item {
                     Text(text = "dhcp lease: " + dhcp.value.dhcpLease)
                 }
@@ -156,7 +156,7 @@ fun getDns(cm: ConnectivityManager, dns: MutableState<Dns>) {
     val network = cm.getLinkProperties(cm.activeNetwork)
     val dnsServers: MutableList<String> = mutableListOf()
     for (it in checkIPv4I(network?.dnsServers)) {
-        dnsServers.add(it.address.toString().removePrefix("/"))
+        dnsServers.add(it.toString().removePrefix("/"))
     }
     if (dnsServers.isEmpty()) {
         dnsServers.add("no dns server found")
@@ -173,8 +173,8 @@ fun getDns(cm: ConnectivityManager, dns: MutableState<Dns>) {
 fun getDhcp(cm: ConnectivityManager, dhcp: MutableState<Dhcp>) {
     var dhcpServer = "readout of dhcp server is only available for android 11 or newer"
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-        dhcpServer = cm.getLinkProperties(cm.activeNetwork)?.dhcpServerAddress?.address.toString()
-            .removePrefix("/")
+        dhcpServer = cm.getLinkProperties(cm.activeNetwork)?.dhcpServerAddress?.toString()
+            ?.removePrefix("/").toString()
     }
     val dhcpLease = DhcpInfo().leaseDuration.toString()
 
@@ -186,7 +186,9 @@ fun checkIPv4I(addresses: MutableList<InetAddress>?): MutableList<InetAddress> {
     val list: MutableList<InetAddress> = mutableListOf()
     if (addresses != null) {
         for (it in addresses) {
-            if (it.address.javaClass.toString() == "class java.net.Inet4Address") list.add(it)
+            if (it.javaClass.toString() == "class java.net.Inet4Address") {
+                list.add(it)
+            }
         }
     }
     return list
@@ -196,7 +198,9 @@ fun checkIPv4L(addresses: MutableList<LinkAddress>?): MutableList<LinkAddress> {
     val list: MutableList<LinkAddress> = mutableListOf()
     if (addresses != null) {
         for (it in addresses) {
-            if (it.address.javaClass.toString() == "class java.net.Inet4Address") list.add(it)
+            if (it.address.javaClass.toString() == "class java.net.Inet4Address") {
+                list.add(it)
+            }
         }
     }
     return list
