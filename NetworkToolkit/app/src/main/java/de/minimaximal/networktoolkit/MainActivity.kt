@@ -10,6 +10,7 @@ import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import de.minimaximal.networktoolkit.ui.theme.NetworkToolkitTheme
@@ -53,7 +54,7 @@ fun HomeScreen() {
                             }
                         }
                     }, modifier = Modifier.padding(horizontal = 16.dp)) {
-                        getTitle(element)
+                        Text(getTitle(element) )
                     }
                     Divider()
 
@@ -72,7 +73,7 @@ fun HomeScreen() {
                     }) {
                         Text(text = "Network Toolkit")
                     }
-                    getTitle(currentScreen)
+                    Text(getTitle(currentScreen))
                 }
             }
         )
@@ -90,14 +91,13 @@ fun HomeScreen() {
     }
 }
 
-@Composable
-private fun getTitle(screen: String) {
-    var title = Text(text = "Übersicht")
+private fun getTitle(screen: String): String {
+    var title = "Übersicht"
     when(screen){
-        "main"      -> title = Text(text = "Übersicht", fontWeight = FontWeight.Bold )
-        "ping"      -> title = Text(text = "Ping")
-        "publicip"  -> title = Text(text = "Public Ip")
-        "whois"     -> title = Text(text = "Who Is")
+        "main"      -> title = "Übersicht"
+        "ping"      -> title = "Ping"
+        "publicip"  -> title = "Public Ip"
+        "whois"     -> title = "Who Is"
     }
     return title
 }
