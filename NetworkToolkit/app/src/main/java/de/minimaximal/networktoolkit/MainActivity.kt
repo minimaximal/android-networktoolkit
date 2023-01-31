@@ -58,7 +58,7 @@ fun HomeScreen(contextWrapper: ContextWrapper) {
             scaffoldState = scaffoldState,
             drawerShape = NavShape(0.dp, 0.5f),
             drawerContent = {
-                arrScreens.forEach() { element ->
+                arrScreens.forEach { element ->
                     if (element != "main") textStyle = TextStyle(
                         textAlign = TextAlign.Left,
                         fontSize = 20.sp
@@ -81,7 +81,7 @@ fun HomeScreen(contextWrapper: ContextWrapper) {
             },
 
             topBar = {
-                TopAppBar() {
+                TopAppBar {
                     Button(onClick = {
                         scope.launch {
                             scaffoldState.drawerState.apply {

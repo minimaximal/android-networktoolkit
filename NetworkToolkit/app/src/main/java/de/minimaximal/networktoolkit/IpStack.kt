@@ -1,14 +1,3 @@
-//fun getMac() {}
-//https://developer.android.com/reference/android/net/MacAddress
-//
-//fun getWlanName() {}
-//
-//fun getWlanSignal() {}
-//
-//fun getWLanBand() {}
-//
-//fun getWWAN() {}
-
 package de.minimaximal.networktoolkit
 
 import android.content.Context
@@ -16,6 +5,7 @@ import android.content.ContextWrapper
 import android.net.ConnectivityManager
 import android.net.DhcpInfo
 import android.net.LinkAddress
+import android.net.wifi.WifiManager
 import android.os.Build
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -37,12 +27,12 @@ import java.net.InetAddress
 fun IpStackView(contextWrapper: ContextWrapper) {
 
     val cm = contextWrapper.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+    contextWrapper.getSystemService(Context.WIFI_SERVICE) as WifiManager
     val ips = remember { mutableStateListOf<LinkAddress>() }
     val masks = remember { mutableStateListOf<Mask>() }
     val gate = remember { mutableStateOf("") }
     val dns = remember { mutableStateOf(Dns(null, null)) }
     val dhcp = remember { mutableStateOf(Dhcp(null, null)) }
-
 
     Column(
         modifier = Modifier
@@ -54,26 +44,30 @@ fun IpStackView(contextWrapper: ContextWrapper) {
         LazyRow(horizontalArrangement = Arrangement.spacedBy(30.dp)) {
             item {
                 Button(onClick = {
+                    clearIpStack(ips, masks, gate, dns, dhcp, true)
                     getIPs(cm, ips)
                 }) {
                     Text("get local ip")
                 }
             }
 
-            item {
-                Button(onClick = {
-                    getMask(masks, ips)
-                    getGate(cm, gate)
-                    getDns(cm, dns)
-                    getDhcp(cm, dhcp)
-                }) {
-                    Text("get additional information")
+            if (!ips.isEmpty()) {
+                item {
+                    Button(onClick = {
+                        // clearIpStack(ips, masks, gate, dns, dhcp, false)
+                        getMask(masks, ips)
+                        getGate(cm, gate)
+                        getDns(cm, dns)
+                        getDhcp(cm, dhcp)
+                    }) {
+                        Text("get additional information")
+                    }
                 }
             }
         }
 
         Button(onClick = {
-
+            clearIpStack(ips, masks, gate, dns, dhcp, true)
         }) {
             Text("clear")
         }
@@ -124,7 +118,6 @@ fun IpStackView(contextWrapper: ContextWrapper) {
     }
 }
 
-
 fun getIPs(cm: ConnectivityManager, ips: MutableList<LinkAddress>) {
     ips.addAll(checkIPv4L(cm.getLinkProperties(cm.activeNetwork)?.linkAddresses))
 }
@@ -142,7 +135,6 @@ fun getMask(
         val broadcastAddress = utils.info.broadcastAddress
         val mask = Mask(netmask, addressCount, networkAddress, broadcastAddress)
         masks.add(mask)
-
     }
 }
 
@@ -166,8 +158,6 @@ fun getDns(cm: ConnectivityManager, dns: MutableState<Dns>) {
         domainName = "n/a"
     }
     dns.value = Dns(dnsServers, domainName)
-
-
 }
 
 fun getDhcp(cm: ConnectivityManager, dhcp: MutableState<Dhcp>) {
@@ -180,7 +170,6 @@ fun getDhcp(cm: ConnectivityManager, dhcp: MutableState<Dhcp>) {
 
     dhcp.value = Dhcp(dhcpServer, dhcpLease)
 }
-
 
 fun checkIPv4I(addresses: MutableList<InetAddress>?): MutableList<InetAddress> {
     val list: MutableList<InetAddress> = mutableListOf()
@@ -204,6 +193,23 @@ fun checkIPv4L(addresses: MutableList<LinkAddress>?): MutableList<LinkAddress> {
         }
     }
     return list
+}
+
+fun clearIpStack(
+    ips: SnapshotStateList<LinkAddress>,
+    masks: SnapshotStateList<Mask>,
+    gate: MutableState<String>,
+    dns: MutableState<Dns>,
+    dhcp: MutableState<Dhcp>,
+    withIp: Boolean
+) {
+    if (withIp) {
+        ips.clear()
+    }
+    masks.clear()
+    gate.value = ""
+    dns.value = Dns(null, null)
+    dhcp.value = Dhcp(null, null)
 }
 
 

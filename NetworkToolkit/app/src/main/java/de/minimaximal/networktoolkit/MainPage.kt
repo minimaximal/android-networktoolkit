@@ -11,7 +11,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -27,9 +26,12 @@ fun MainScreen() {
         MaterialTheme.colors.primaryVariant,
         MaterialTheme.colors.secondary
     )
-    Column (modifier = Modifier
-        .fillMaxSize()
-        .padding(horizontal = 16.dp, vertical = 30.dp), horizontalAlignment = Alignment.CenterHorizontally,) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(horizontal = 16.dp, vertical = 30.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
         Text(
             buildAnnotatedString {
                 append("Willkommen im ")
@@ -43,11 +45,21 @@ fun MainScreen() {
                     append("Networktoolkit,\n\n")
                 }
                 append("mit einem Klick auf \"")
-                withStyle(style = SpanStyle(fontWeight = FontWeight.Bold, color = MaterialTheme.colors.primary)) {
+                withStyle(
+                    style = SpanStyle(
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colors.primary
+                    )
+                ) {
                     append("Network Toolkit")
                 }
                 append("\" in der Kopfzeile oder durch ")
-                withStyle(style = SpanStyle(fontWeight = FontWeight.Bold, color = MaterialTheme.colors.primary)) {
+                withStyle(
+                    style = SpanStyle(
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colors.primary
+                    )
+                ) {
                     append("Swipen von links nach rechts")
                 }
                 append(", gelangen Sie ins Menü. Dort kann das gewünschte Tool ausgewählt werden.\n\n")

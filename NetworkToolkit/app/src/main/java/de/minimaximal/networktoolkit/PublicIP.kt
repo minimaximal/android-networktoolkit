@@ -29,7 +29,6 @@ fun PublicIpView() {
     val allAdd = remember { mutableStateOf("") }
     val allName = remember { mutableStateOf("") }
 
-
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -44,7 +43,7 @@ fun PublicIpView() {
                     clearPubIP(message, ip, asn, assAdd, assName, allAdd, allName, true)
                     getWhatsMyIp(ip, message)
                 }) {
-                    Text("get pulic ip")
+                    Text("get public ip")
                 }
             }
 
@@ -59,8 +58,6 @@ fun PublicIpView() {
                     }
                 }
             }
-
-
         }
 
         Button(onClick = {
