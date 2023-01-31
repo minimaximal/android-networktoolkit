@@ -28,5 +28,5 @@ Das Auslesen des IP Stacks liefert im Emulator keine sinnvollen Werte.</p>
 
 ### Anmerkungen
 <p>In der Contributor Liste von GitHub ist aus unbekannten technischen Gründen Paul Antoni nicht aufgeführt. -> siehe Commit History</p>
-<p>Als externe API wird die REST API vin RIPE STAT verwendet. Die Drittanbieterbibliothek commons-net von Apache wird für die Umrechnung der Netzmasken verwendet.<br>
-Als Implementierung einer alternativen Gerätefunktionalität wird das auslesen der lokalen Netzwerkinformationen verwendet.</p>
+<p>Als externe API wird die REST API von RIPE STAT verwendet. Die Drittanbieterbibliothek commons-net von Apache wird für die Umrechnung der Netzmasken verwendet.<br>
+Als Implementierung einer alternativen Gerätefunktionalität wird das Auslesen der lokalen Netzwerkinformationen verwendet.</p>
