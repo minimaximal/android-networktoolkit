@@ -99,6 +99,9 @@ fun formatQueryResult(queryResult: WhoisRecord): List<String> {
     formattedQuery.add("creation date: ${queryResult.createdDate}")
     formattedQuery.add("update date: ${queryResult.updatedDate}")
     formattedQuery.add("expiration date: ${queryResult.expiresDate}")
+    formattedQuery.add("registrar name: ${queryResult.registrarName}")
+    formattedQuery.add("registrar IANA ID: ${queryResult.registrarIANAID}")
+    formattedQuery.add("name servers: \n${queryResult.nameServers.rawText}")
 
     return formattedQuery
 }
