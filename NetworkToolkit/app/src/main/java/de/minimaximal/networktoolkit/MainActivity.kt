@@ -4,12 +4,20 @@ import android.content.ContextWrapper
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Outline
+import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import de.minimaximal.networktoolkit.ui.theme.NetworkToolkitTheme
 import kotlinx.coroutines.launch
@@ -39,27 +47,28 @@ fun HomeScreen(contextWrapper: ContextWrapper) {
         var currentScreen by remember { mutableStateOf("main") }
         val scaffoldState = rememberScaffoldState()
         val scope = rememberCoroutineScope()
-        val arrScreens = arrayOf("main", "ipstack", "ping", "publicip", "whois")
+        val arrScreens = arrayOf("main","ping","publicip","whois")
         Scaffold(
             scaffoldState = scaffoldState,
+            drawerShape = NavShape(0.dp, 0.5f),
             drawerContent = {
-                arrScreens.forEach() { element ->
-                    TextButton(onClick = {
-                        currentScreen = element
-                        scope.launch {
-                            scaffoldState.drawerState.apply {
-                                if (isClosed) open() else close()
+                    arrScreens.forEach() { element ->
+                        TextButton(onClick = {
+                            currentScreen = element
+                            scope.launch {
+                                scaffoldState.drawerState.apply {
+                                    if (isClosed) open() else close()
+                                }
                             }
+                        }, modifier = Modifier.padding(horizontal = 16.dp)) {
+                            Text(getTitle(element), textAlign = TextAlign.Center )
                         }
-                    }, modifier = Modifier.padding(horizontal = 16.dp)) {
-                        Text(getTitle(element))
+                        Divider()
+
                     }
-                    Divider()
-
-                }
-
 
             },
+
             topBar = {
                 TopAppBar() {
                     Button(onClick = {
@@ -100,4 +109,26 @@ private fun getTitle(screen: String): String {
         "whois" -> title = "Who Is"
     }
     return title
+}
+
+class NavShape(
+    private val widthOffset: Dp,
+    private val scale: Float
+) : Shape {
+
+    override fun createOutline(
+        size: Size,
+        layoutDirection: LayoutDirection,
+        density: Density
+    ): Outline {
+        return Outline.Rectangle(
+            Rect(
+                Offset.Zero,
+                Offset(
+                    size.width * scale + with(density) { widthOffset.toPx() },
+                    size.height
+                )
+            )
+        )
+    }
 }
