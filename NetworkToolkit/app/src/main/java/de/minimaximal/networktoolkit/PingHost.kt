@@ -1,9 +1,6 @@
 package de.minimaximal.networktoolkit
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.text.KeyboardOptions
@@ -22,16 +19,21 @@ fun PingHostView() {
     val message = remember { mutableStateOf("") }
     val result = remember { mutableStateListOf<PingHostResult>() }
     val statistics = remember { mutableStateOf(PingHostStatistics(null, null, null)) }
-    var host by remember { mutableStateOf("hk.de") }
+    var host by remember { mutableStateOf("") }
     var timeout by remember { mutableStateOf("5000") }
     var numberOfPings by remember { mutableStateOf("5") }
     var delay by remember { mutableStateOf("100") }
 
 
-    Column(modifier = Modifier.padding(16.dp)) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.SpaceEvenly
+    ) {
         TextField(value = host,
             onValueChange = { host = it },
-            label = { Text("Enter host to ping:") })
+            label = { Text("Enter hostname or ip to ping:") })
 
         TextField(
             value = numberOfPings,
@@ -55,8 +57,6 @@ fun PingHostView() {
         )
 
 
-
-
         LazyRow(horizontalArrangement = Arrangement.spacedBy(30.dp)) {
             item {
                 Button(onClick = {
@@ -73,14 +73,14 @@ fun PingHostView() {
                         message.value = "ERROR: please check your input parameters"
                     }
                 }) {
-                    Text("PING")
+                    Text("ping")
                 }
             }
             item {
                 Button(onClick = {
                     clearPing(result, statistics, message)
                 }) {
-                    Text("CLEAR")
+                    Text("clear")
                 }
             }
         }

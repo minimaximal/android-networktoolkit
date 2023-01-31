@@ -1,12 +1,10 @@
-// TODO: https://stat.ripe.net/docs/02.data-api/address-space-usage.html
-
 package de.minimaximal.networktoolkit
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.material.Button
 import androidx.compose.material.Text
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import de.minimaximal.networktoolkit.api.ripe.addressspaceusage.Model
@@ -36,61 +34,63 @@ fun PublicIpView() {
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp),
-        verticalArrangement = Arrangement.SpaceEvenly,
-        horizontalAlignment = Alignment.CenterHorizontally
+        verticalArrangement = Arrangement.SpaceEvenly
     ) {
 
+        LazyRow(horizontalArrangement = Arrangement.spacedBy(30.dp)) {
 
+            item {
+                Button(onClick = {
+                    clearPubIP(message, ip, asn, assAdd, assName, allAdd, allName, true)
+                    getWhatsMyIp(ip, message)
+                }) {
+                    Text("get pulic ip")
+                }
+            }
 
-        Row() {
-
-            Button(onClick = {
-                clearPubIP(message, ip, asn, assAdd, assName, allAdd, allName, true)
-                getWhatsMyIp(ip, message)
-            }) {
-                Text("get pulic IP")
+            item {
+                if (ip.value != "" && ip.value != errorIo && ip.value != errorNoInfo) {
+                    Button(onClick = {
+                        clearPubIP(message, ip, asn, assAdd, assName, allAdd, allName, false)
+                        getNetworkInfo(ip.value, asn, message)
+                        getAddressSpaceUsage(ip.value, assAdd, assName, allAdd, allName, message)
+                    }) {
+                        Text("get additional information")
+                    }
+                }
             }
 
 
-            Button(onClick = {
-                clearPubIP(message, ip, asn, assAdd, assName, allAdd, allName, true)
-            }) {
-                Text("clear")
-            }
         }
 
-
-        if (ip.value != "" && ip.value != errorIo && ip.value != errorNoInfo) {
-            Button(onClick = {
-                clearPubIP(message, ip, asn, assAdd, assName, allAdd, allName, false)
-                getNetworkInfo(ip.value, asn, message)
-                getAddressSpaceUsage(ip.value, assAdd, assName, allAdd, allName, message)
-            }) {
-                Text("get additional information")
-            }
+        Button(onClick = {
+            clearPubIP(message, ip, asn, assAdd, assName, allAdd, allName, true)
+        }) {
+            Text("clear")
         }
+
 
         if (message.value != "") {
             Text(text = message.value)
         } else {
 
             Text(
-                text = "IP: ${ip.value}",
+                text = "ip: ${ip.value}",
             )
             Text(
-                text = "ASN: ${asn.value}",
+                text = "ans: ${asn.value}",
             )
             Text(
-                text = "Network: ${assAdd.value}",
+                text = "network: ${assAdd.value}",
             )
             Text(
-                text = "Network Name: ${assName.value}",
+                text = "network name: ${assName.value}",
             )
             Text(
-                text = "AS Network: ${allAdd.value}",
+                text = "as network: ${allAdd.value}",
             )
             Text(
-                text = "AS Name: ${allName.value}",
+                text = "as name: ${allName.value}",
             )
         }
     }
@@ -105,17 +105,17 @@ private val retrofit: Retrofit? = Retrofit.Builder()
 
 interface WhatsMyIpApi {
     @GET("data/whats-my-ip/data.json")
-    suspend fun getWhatsMyIpApi(): Call<de.minimaximal.networktoolkit.api.ripe.whatsmyip.Model>
+    fun getWhatsMyIpApi(): Call<de.minimaximal.networktoolkit.api.ripe.whatsmyip.Model>
 }
 
 interface AddressSpaceUsageApi {
     @GET
-    suspend fun getAddressSpaceUsageApi(@Url url: String): Call<Model>
+    fun getAddressSpaceUsageApi(@Url url: String): Call<Model>
 }
 
 interface NetworkInfoApi {
     @GET
-    suspend fun getNetworkInfoApi(@Url url: String): Call<de.minimaximal.networktoolkit.api.ripe.networkinfo.Model>
+    fun getNetworkInfoApi(@Url url: String): Call<de.minimaximal.networktoolkit.api.ripe.networkinfo.Model>
 }
 
 
@@ -123,8 +123,11 @@ private val whatsmyip = retrofit?.create(WhatsMyIpApi::class.java)
 private val addressspaceusage = retrofit?.create(AddressSpaceUsageApi::class.java)
 private val networkinfo = retrofit?.create(NetworkInfoApi::class.java)
 
-private const val errorIo = "I/O ERROR: check network connection or input parameters"
+private const val errorIo = "I/O ERROR: check network connection"
+private const val errorInput =
+    "API ERROR: check network connection or input parameters (ipv6 is not supported)"
 private const val errorNoInfo = "no information available"
+
 
 private fun getWhatsMyIp(ip: MutableState<String>, message: MutableState<String>) {
     CoroutineScope(Dispatchers.Main).launch {
@@ -182,7 +185,10 @@ private fun getAddressSpaceUsage(
             getAddressSpaceUsageAllName(AllName, message, response)
 
         } catch (e: Exception) {
-            message.value = errorIo
+            AssAdd.value = errorInput
+            AssName.value = errorInput
+            AllAdd.value = errorInput
+            AllName.value = errorInput
         }
     }
 }

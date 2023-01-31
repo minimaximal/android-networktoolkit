@@ -17,9 +17,12 @@ import android.net.ConnectivityManager
 import android.net.DhcpInfo
 import android.net.LinkAddress
 import android.os.Build
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.material.Button
 import androidx.compose.material.Text
 import androidx.compose.runtime.*
@@ -41,21 +44,38 @@ fun IpStackView(contextWrapper: ContextWrapper) {
     val dhcp = remember { mutableStateOf(Dhcp(null, null)) }
 
 
-    Column(modifier = Modifier.padding(16.dp)) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.SpaceEvenly
+    ) {
 
-        Button(onClick = {
-            getIPs(cm, ips)
-        }) {
-            Text("GET IP")
+        LazyRow(horizontalArrangement = Arrangement.spacedBy(30.dp)) {
+            item {
+                Button(onClick = {
+                    getIPs(cm, ips)
+                }) {
+                    Text("get local ip")
+                }
+            }
+
+            item {
+                Button(onClick = {
+                    getMask(masks, ips)
+                    getGate(cm, gate)
+                    getDns(cm, dns)
+                    getDhcp(cm, dhcp)
+                }) {
+                    Text("get additional information")
+                }
+            }
         }
 
         Button(onClick = {
-            getMask(masks, ips)
-            getGate(cm, gate)
-            getDns(cm, dns)
-            getDhcp(cm, dhcp)
+
         }) {
-            Text("GET MORE")
+            Text("clear")
         }
 
 
@@ -65,13 +85,17 @@ fun IpStackView(contextWrapper: ContextWrapper) {
             }
             items(masks.size) { index ->
                 Text(text = "netmask(" + index + "): " + masks[index].netmask)
-                Text(text = "network size(" + index + "): " + masks[index].addressCount.toString() + "addresses")
+                Text(text = "network size(" + index + "): " + masks[index].addressCount.toString() + " addresses")
                 Text(text = "network address(" + index + "): " + masks[index].networkAddress)
                 Text(text = "broadcast(" + index + "): " + masks[index].broadcastAddress)
             }
-            item {
-                Text(text = "default gateway: " + gate.value)
+
+            if (gate.value != "") {
+                item {
+                    Text(text = "default gateway: " + gate.value)
+                }
             }
+
             dns.value.dnsServer?.let {
                 items(it.size) { index ->
                     Text(text = "dns server(" + index + "): " + dns.value.dnsServer!![index])
@@ -79,12 +103,23 @@ fun IpStackView(contextWrapper: ContextWrapper) {
             }
 
 
-
-            item {
-                dns.value.domainName?.let { "domain name: " + Text(text = it) }
+            if (dns.value.domainName == null) {
+                item {
+                    Text(text = "domain name: " + dns.value.domainName)
+                }
             }
-            item { dhcp.value.dhcpServer?.let { "dhcp server: " + Text(text = it) } }
-            item { dhcp.value.dhcpLease?.let { "dcp lease: " + Text(text = it) } }
+
+            if (dhcp.value.dhcpServer == null) {
+                item {
+                    Text(text = "dhcp server: " + dhcp.value.dhcpServer)
+                }
+            }
+
+            if (dhcp.value.dhcpLease == null) {
+                item {
+                    Text(text = "dhcp lease: " + dhcp.value.dhcpLease)
+                }
+            }
         }
     }
 }
@@ -96,8 +131,7 @@ fun getIPs(cm: ConnectivityManager, ips: MutableList<LinkAddress>) {
 
 
 fun getMask(
-    masks: SnapshotStateList<Mask>,
-    ips: SnapshotStateList<LinkAddress>
+    masks: SnapshotStateList<Mask>, ips: SnapshotStateList<LinkAddress>
 ) {
     for (it in ips) {
         val utils = SubnetUtils(it.toString())
@@ -127,8 +161,11 @@ fun getDns(cm: ConnectivityManager, dns: MutableState<Dns>) {
     if (dnsServers.isEmpty()) {
         dnsServers.add("no dns server found")
     }
-    val domainName = network?.domains
-    dns.value = domainName?.let { Dns(dnsServers, it) }!!
+    var domainName = network?.domains
+    if (domainName == null) {
+        domainName = "n/a"
+    }
+    dns.value = Dns(dnsServers, domainName)
 
 
 }
@@ -149,8 +186,7 @@ fun checkIPv4I(addresses: MutableList<InetAddress>?): MutableList<InetAddress> {
     val list: MutableList<InetAddress> = mutableListOf()
     if (addresses != null) {
         for (it in addresses) {
-            if (it.address.javaClass.toString() == "class java.net.Inet4Address")
-                list.add(it)
+            if (it.address.javaClass.toString() == "class java.net.Inet4Address") list.add(it)
         }
     }
     return list
@@ -160,8 +196,7 @@ fun checkIPv4L(addresses: MutableList<LinkAddress>?): MutableList<LinkAddress> {
     val list: MutableList<LinkAddress> = mutableListOf()
     if (addresses != null) {
         for (it in addresses) {
-            if (it.address.javaClass.toString() == "class java.net.Inet4Address")
-                list.add(it)
+            if (it.address.javaClass.toString() == "class java.net.Inet4Address") list.add(it)
         }
     }
     return list
@@ -176,11 +211,9 @@ data class Mask(
 )
 
 data class Dns(
-    val dnsServer: List<String>?,
-    val domainName: String?
+    val dnsServer: List<String>?, val domainName: String?
 )
 
 data class Dhcp(
-    val dhcpServer: String?,
-    val dhcpLease: String?
+    val dhcpServer: String?, val dhcpLease: String?
 )
