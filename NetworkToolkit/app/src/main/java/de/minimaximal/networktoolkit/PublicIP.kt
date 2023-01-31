@@ -1,5 +1,4 @@
 // TODO: https://stat.ripe.net/docs/02.data-api/address-space-usage.html
-// TODO: network message
 
 package de.minimaximal.networktoolkit
 
@@ -41,6 +40,8 @@ fun PublicIpView() {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
 
+
+
         Row() {
 
             Button(onClick = {
@@ -69,27 +70,29 @@ fun PublicIpView() {
             }
         }
 
+        if (message.value != "") {
+            Text(text = message.value)
+        } else {
 
-
-        Text(
-            text = "IP: ${ip.value}",
-        )
-        Text(
-            text = "ASN: ${asn.value}",
-        )
-        Text(
-            text = "Network: ${assAdd.value}",
-        )
-        Text(
-            text = "Network Name: ${assName.value}",
-        )
-        Text(
-            text = "AS Network: ${allAdd.value}",
-        )
-        Text(
-            text = "AS Name: ${allName.value}",
-        )
-
+            Text(
+                text = "IP: ${ip.value}",
+            )
+            Text(
+                text = "ASN: ${asn.value}",
+            )
+            Text(
+                text = "Network: ${assAdd.value}",
+            )
+            Text(
+                text = "Network Name: ${assName.value}",
+            )
+            Text(
+                text = "AS Network: ${allAdd.value}",
+            )
+            Text(
+                text = "AS Name: ${allName.value}",
+            )
+        }
     }
 }
 
@@ -102,17 +105,17 @@ private val retrofit: Retrofit? = Retrofit.Builder()
 
 interface WhatsMyIpApi {
     @GET("data/whats-my-ip/data.json")
-    fun getWhatsMyIpApi(): Call<de.minimaximal.networktoolkit.api.ripe.whatsmyip.Model>
+    suspend fun getWhatsMyIpApi(): Call<de.minimaximal.networktoolkit.api.ripe.whatsmyip.Model>
 }
 
 interface AddressSpaceUsageApi {
     @GET
-    fun getAddressSpaceUsageApi(@Url url: String): Call<Model>
+    suspend fun getAddressSpaceUsageApi(@Url url: String): Call<Model>
 }
 
 interface NetworkInfoApi {
     @GET
-    fun getNetworkInfoApi(@Url url: String): Call<de.minimaximal.networktoolkit.api.ripe.networkinfo.Model>
+    suspend fun getNetworkInfoApi(@Url url: String): Call<de.minimaximal.networktoolkit.api.ripe.networkinfo.Model>
 }
 
 
