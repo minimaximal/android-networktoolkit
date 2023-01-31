@@ -20,7 +20,8 @@
 <p>API Keys oder ähnliches wird nicht benötigt.<br>
 Zum Testen der Funktionalität der App wird am besten ein **physisches Gerät** mit **mindestens Android 8** verwendet.<br>
 Die Ping Funktionalität ist im Emulator von Android Studio nicht gegeben. (Ping kommt nicht durch)<br>
-Das Auslesen des IP Stacks liefert im Emulator keine sinnvollen Werte.</p>
+Das Auslesen des IP Stacks liefert im Emulator keine sinnvollen Werte.<br>
+IPv6 wird nicht unterstützt.</p>
 
 ### Aufgetretene Probleme
 - Verlust eines Teammitglieds durch Exmatrikulation
