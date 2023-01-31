@@ -1,15 +1,5 @@
-// TODO: make side bar text field full width or make sidebar smaller
-// TODO: show current View in top bar
-// TODO: change color sheme, purple an dark mode looks awfully
-// TODO: sidebar: highlight the main "Network Toolkit"
-// TODO: sidebar: Text is not vertically aligned
-
 package de.minimaximal.networktoolkit
 
-import android.annotation.SuppressLint
-import android.content.Context
-import android.content.ContextWrapper
-import android.net.ConnectivityManager
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -19,6 +9,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import de.minimaximal.networktoolkit.ui.theme.NetworkToolkitTheme
@@ -26,9 +17,6 @@ import kotlinx.coroutines.launch
 
 
 class MainActivity : ComponentActivity() {
-
-
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -38,26 +26,25 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colors.background
                 ) {
-                    val contextWrapper = ContextWrapper(this)
-                    HomeScreen(contextWrapper)
+                    HomeScreen()
                 }
             }
         }
     }
 }
 
+@Preview(showBackground = true)
 @Composable
-fun HomeScreen(contextWrapper: ContextWrapper) {
+fun HomeScreen() {
     NetworkToolkitTheme {
         var currentScreen by remember { mutableStateOf("main") }
         val scaffoldState = rememberScaffoldState()
         val scope = rememberCoroutineScope()
-        val arrScreens = arrayOf("main", "ipstack","ping","publicip","whois")
-        val arrText = arrayOf("Network Toolkit", "IP Stack","Ping","Public Ip","WhoIs")
+        val arrScreens = arrayOf("main","ping","publicip","whois")
         Scaffold(
             scaffoldState = scaffoldState,
             drawerContent = {
-                arrScreens.forEachIndexed() { index, element ->
+                arrScreens.forEach() { element ->
                     TextButton(onClick = {
                         currentScreen = element
                         scope.launch {
@@ -66,7 +53,7 @@ fun HomeScreen(contextWrapper: ContextWrapper) {
                             }
                         }
                     }, modifier = Modifier.padding(horizontal = 16.dp)) {
-                        Text(arrText[index])
+                        getTitle(element)
                     }
                     Divider()
 
@@ -85,6 +72,7 @@ fun HomeScreen(contextWrapper: ContextWrapper) {
                     }) {
                         Text(text = "Network Toolkit")
                     }
+                    getTitle(currentScreen)
                 }
             }
         )
@@ -92,7 +80,6 @@ fun HomeScreen(contextWrapper: ContextWrapper) {
             Box(modifier = Modifier.padding(contentPadding)) {
                 when (currentScreen) {
                     "main" -> MainScreen()
-                    "ipstack" -> IpStackView(contextWrapper)
                     "ping" -> PingHostView()
                     "publicip" -> PublicIpView()
                     "whois" -> Text("aktuelle Ansicht: $currentScreen")
@@ -101,4 +88,16 @@ fun HomeScreen(contextWrapper: ContextWrapper) {
             }
         }
     }
+}
+
+@Composable
+private fun getTitle(screen: String) {
+    var title = Text(text = "Übersicht")
+    when(screen){
+        "main"      -> title = Text(text = "Übersicht", fontWeight = FontWeight.Bold )
+        "ping"      -> title = Text(text = "Ping")
+        "publicip"  -> title = Text(text = "Public Ip")
+        "whois"     -> title = Text(text = "Who Is")
+    }
+    return title
 }
